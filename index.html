@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Scientific Calculator (Degrees)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Body and calculator container */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .calculator {
+            width: 550px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+        }
+
+        /* Toggle buttons */
+        #modeToggle, #sciToggle {
+            position: absolute;
+            top: 15px;
+            cursor: pointer;
+            font-size: 1.4rem;
+            color: #444;
+        }
+
+        #modeToggle { 
+          right: 15px; 
+        }
+        
+        #sciToggle { 
+          left: 15px;
+          }
+
+        /* Display screens */
+        #output, #answer {
+            width: 100%;
+            height: 50px;
+            border-radius: 10px;
+            padding: 10px 15px;
+            font-size: 1.5rem;
+            font-family: monospace;
+            margin-bottom: 5px;
+            overflow-x: auto;
+            background: #f0f0f0;
+            color: #000;
+        }
+
+        #answer { 
+          color: #007f00;
+          }
+
+        /* Buttons grid */
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+        }
+
+        .buttons button {
+            padding: 12px 0;
+            font-size: 1rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            user-select: none;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .buttons button:hover { 
+          filter: brightness(1.1);
+          }
+
+        /* Button types */
+        .number { 
+          background: #e0e0e0; 
+          color: #000;
+          }
+          
+        .operator { 
+          background: #ff9500; 
+          color: #fff;
+          }
+          
+        .equals { 
+          background: #007aff; 
+          color: #fff;
+          }
+          
+        .clear { 
+          background: #ff3b30; 
+          color: #fff;
+          }
+          
+        .delete { 
+          background: #8e8e93;
+          color: #fff;
+          }
+          
+        .scientific { 
+          display: none;
+          }
+
+        /* Tooltip */
+        .tooltip {
+          position: relative;
+          }
+          
+        .tooltip:hover::after {
+            content: attr(data-tip);
+            position: absolute;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: #fff;
+            padding: 5px 8px;
+            border-radius: 5px;
+            white-space: nowrap;
+            font-size: 0.8rem;
+        }
+
+        /* Dark mode styles */
+        body.dark { 
+          background: #1e1e1e; 
+          color: #fff;
+          }
+          
+        body.dark .calculator {
+          background: #2c2c2c;
+          }
+          
+        body.dark #output, body.dark #answer { 
+          background: #3a3a3a; 
+          color: #fff;
+          }
+          
+        body.dark #answer { 
+          color: #4cd964;
+          }
+          
+        body.dark .buttons button.number {
+          background: #555;
+          color: #fff;
+          }
+          
+        body.dark .buttons button.operator {
+          background: #ff9500;
+          color: #fff;
+          }
+          
+        body.dark .buttons button.equals {
+          background: #0a84ff;
+          color: #fff;
+          }
+          
+        body.dark .buttons button.clear {
+          background: #ff453a;
+          color: #fff;
+          }
+          
+        body.dark .buttons button.delete {
+          background: #8e8e93;
+          color: #fff;
+          }
+          
+        body.dark #modeToggle, body.dark #sciToggle {
+          color: #fff;
+          }
+          
+    </style>
+</head>
+
+<body>
+    <div class="calculator">
+        <!-- Mode and Scientific toggles -->
+        <i id="modeToggle" class="fas fa-moon"></i>
+        <i id="sciToggle" class="fas fa-flask"></i>
+
+        <!-- Display screens -->
+        <div id="output"></div>
+        <div id="answer"></div>
+
+        <!-- Buttons -->
+        <div class="buttons">
+
+            <!-- Basic numbers & operators -->
+            <button class="number tooltip" id="7" data-tip="7">7</button>
+            <button class="number tooltip" id="8" data-tip="8">8</button>
+            <button class="number tooltip" id="9" data-tip="9">9</button>
+            <button class="operator tooltip" id="/" data-tip="Division">/</button>
+            <button class="clear tooltip" id="C" data-tip="Clear All">C</button>
+            <button class="delete tooltip" id="AC" data-tip="Delete Last">DEL</button>
+
+            <button class="number tooltip" id="4" data-tip="4">4</button>
+            <button class="number tooltip" id="5" data-tip="5">5</button>
+            <button class="number tooltip" id="6" data-tip="6">6</button>
+            <button class="operator tooltip" id="*" data-tip="Multiplication">*</button>
+            <button class="operator tooltip" id="(" data-tip="Open Parenthesis">(</button>
+            <button class="operator tooltip" id=")" data-tip="Close Parenthesis">)</button>
+
+            <button class="number tooltip" id="1" data-tip="1">1</button>
+            <button class="number tooltip" id="2" data-tip="2">2</button>
+            <button class="number tooltip" id="3" data-tip="3">3</button>
+            <button class="operator tooltip" id="-" data-tip="Subtraction">-</button>
+            <button class="number tooltip" id="0" data-tip="0">0</button>
+            <button class="number tooltip" id="." data-tip="Decimal">.</button>
+
+            <button class="operator tooltip" id="+" data-tip="Addition">+</button>
+            <button class="equals tooltip" id="=" data-tip="Equals">=</button>
+
+            <!-- Scientific buttons -->
+            <button class="scientific operator tooltip" id="^" data-tip="Power: x^y">^</button>
+            <button class="scientific operator tooltip" id="sqrt" data-tip="Square Root">√</button>
+            <button class="scientific operator tooltip" id="cbrt" data-tip="Cube Root">∛</button>
+            <button class="scientific operator tooltip" id="xpow" data-tip="x^y">x^y</button>
+
+            <button class="scientific operator tooltip" id="sin" data-tip="sin(degrees)">sin</button>
+            <button class="scientific operator tooltip" id="cos" data-tip="cos(degrees)">cos</button>
+            <button class="scientific operator tooltip" id="tan" data-tip="tan(degrees)">tan</button>
+            <button class="scientific operator tooltip" id="cot" data-tip="cot(degrees)">cot</button>
+            <button class="scientific operator tooltip" id="sec" data-tip="sec(degrees)">sec</button>
+            <button class="scientific operator tooltip" id="csc" data-tip="csc(degrees)">csc</button>
+
+            <!-- Additional scientific, memory, fractions etc. -->
+            <!-- ... all other scientific buttons follow similar structure ... -->
+
+        </div>
+    </div>
+
+    <script>
+        // Elements
+        let output = document.getElementById('output');
+        let answer = document.getElementById('answer');
+        let sciToggle = document.getElementById('sciToggle');
+        let modeToggle = document.getElementById('modeToggle');
+        let memory = 0;
+
+        // Dark mode toggle
+        modeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+            modeToggle.classList.toggle('fa-sun');
+            modeToggle.classList.toggle('fa-moon');
+        });
+
+        // Scientific buttons toggle
+        sciToggle.addEventListener('click', () => {
+            document.querySelectorAll('.scientific').forEach(btn => {
+                btn.style.display = btn.style.display === 'none' ? 'block' : 'none';
+            });
+            sciToggle.classList.toggle('fa-flask-vial');
+        });
+
+        // Factorial and combinatorics
+        function factorial(n) {
+            if (n < 0) return NaN;
+            if (n === 0 || n === 1) return 1;
+            let res = 1;
+            for (let i = 2; i <= n; i++) res *= i;
+            return res;
+        }
+
+        function nCr(n, r) { return factorial(n) / (factorial(r) * factorial(n - r)); }
+        function nPr(n, r) { return factorial(n) / factorial(n - r); }
+
+        // Trig in degrees
+        function sinDeg(x) { return Math.sin(x * Math.PI / 180); }
+        function cosDeg(x) { return Math.cos(x * Math.PI / 180); }
+        function tanDeg(x) { return Math.tan(x * Math.PI / 180); }
+        function cotDeg(x) { return 1 / Math.tan(x * Math.PI / 180); }
+        function secDeg(x) { return 1 / Math.cos(x * Math.PI / 180); }
+        function cscDeg(x) { return 1 / Math.sin(x * Math.PI / 180); }
+        function asinDeg(x) { return Math.asin(x) * 180 / Math.PI; }
+        function acosDeg(x) { return Math.acos(x) * 180 / Math.PI; }
+        function atanDeg(x) { return Math.atan(x) * 180 / Math.PI; }
+
+        // Hyperbolic
+        function sinh(x) { return Math.sinh(x); }
+        function cosh(x) { return Math.cosh(x); }
+        function tanh(x) { return Math.tanh(x); }
+        function coth(x) { return 1 / Math.tanh(x); }
+        function sech(x) { return 1 / Math.cosh(x); }
+        function csch(x) { return 1 / Math.sinh(x); }
+
+        // Fractions
+        function mixedFrac2dec(s) {
+            s = s.trim();
+            if (s.includes(' ')) {
+                let parts = s.split(' ');
+                return parseInt(parts[0]) + frac2dec(parts[1]);
+            } else if (s.includes('/')) return frac2dec(s);
+            else return parseFloat(s);
+        }
+
+        function frac2dec(f) {
+            let parts = f.split('/');
+            return parseFloat(parts[0]) / parseFloat(parts[1]);
+        }
+
+        function dec2frac(x) {
+            let tolerance = 1.0E-6, h1 = 1, h2 = 0, k1 = 0, k2 = 1, b = x;
+            do {
+                let a = Math.floor(b);
+                let h = a * h1 + h2;
+                let k = a * k1 + k2;
+                if (Math.abs(x - h / k) < tolerance) return h + '/' + k;
+                h2 = h1; h1 = h;
+                k2 = k1; k1 = k;
+                b = 1 / (b - a);
+            } while (true);
+        }
+
+        // Safe calculate
+        function calculate(expr) {
+            return Function(
+                'factorial,nCr,nPr,sinDeg,cosDeg,tanDeg,cotDeg,secDeg,cscDeg,asinDeg,acosDeg,atanDeg,' +
+                'sinh,cosh,tanh,coth,sech,csch,Math,mixedFrac2dec',
+                '"use strict"; return (' + expr + ')'
+            )(factorial, nCr, nPr, sinDeg, cosDeg, tanDeg, cotDeg, secDeg, cscDeg, asinDeg, acosDeg, atanDeg,
+              sinh, cosh, tanh, coth, sech, csch, Math, mixedFrac2dec);
+        }
+
+        // Show result
+        function calculateResult() {
+            try {
+                let res = calculate(output.innerText);
+                answer.innerText = (res === undefined || isNaN(res)) ? 'Error' : Number(res.toFixed(6));
+                output.innerText = '';
+            } catch {
+                answer.innerText = 'Error';
+            }
+        }
+
+        // Button input
+        document.querySelectorAll('.buttons button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.id;
+                if (id === '^' || id === 'xpow') output.innerText += '**';
+                else if (id === 'sqrt') output.innerText += 'Math.sqrt(';
+                else if (id === 'cbrt') output.innerText += 'Math.cbrt(';
+                else if (id === '10pow') output.innerText += 'Math.pow(10,';
+                else if (id === 'sin') output.innerText += 'sinDeg(';
+                else if (id === 'cos') output.innerText += 'cosDeg(';
+                else if (id === 'tan') output.innerText += 'tanDeg(';
+                else if (id === 'cot') output.innerText += 'cotDeg(';
+                else if (id === 'sec') output.innerText += 'secDeg(';
+                else if (id === 'csc') output.innerText += 'cscDeg(';
+                else if (id === 'asin') output.innerText += 'asinDeg(';
+                else if (id === 'acos') output.innerText += 'acosDeg(';
+                else if (id === 'atan') output.innerText += 'atanDeg(';
+                else if (id === 'sinh') output.innerText += 'sinh(';
+                else if (id === 'cosh') output.innerText += 'cosh(';
+                else if (id === 'tanh') output.innerText += 'tanh(';
+                else if (id === 'coth') output.innerText += 'coth(';
+                else if (id === 'sech') output.innerText += 'sech(';
+                else if (id === 'csch') output.innerText += 'csch(';
+                else if (id === 'ln') output.innerText += 'Math.log(';
+                else if (id === 'log') output.innerText += 'Math.log10(';
+                else if (id === 'exp') output.innerText += 'Math.exp(';
+                else if (id === 'pi') output.innerText += 'Math.PI';
+                else if (id === 'e') output.innerText += 'Math.E';
+                else if (id === 'abs') output.innerText += 'Math.abs(';
+                else if (id === 'round') output.innerText += 'Math.round(';
+                else if (id === 'floor') output.innerText += 'Math.floor(';
+                else if (id === 'ceil') output.innerText += 'Math.ceil(';
+                else if (id === '!') output.innerText += 'factorial(';
+                else if (id === 'nCr') output.innerText += 'nCr(';
+                else if (id === 'nPr') output.innerText += 'nPr(';
+                else if (id === '%') output.innerText += '/100';
+                else if (id === 'C') { output.innerText = ''; answer.innerText = ''; }
+                else if (id === 'AC') output.innerText = output.innerText.slice(0, -1);
+                else if (id === '=') calculateResult();
+                else if (id === 'M+') memory += parseFloat(answer.innerText) || 0;
+                else if (id === 'M-') memory -= parseFloat(answer.innerText) || 0;
+                else if (id === 'MR') output.innerText += memory;
+                else if (id === 'MC') memory = 0;
+                else if (id === 'frac2dec') output.innerText += mixedFrac2dec(output.innerText);
+                else if (id === 'dec2frac') output.innerText += dec2frac(parseFloat(output.innerText));
+                else output.innerText += id;
+            });
+        });
+
+        // Keyboard support
+        document.addEventListener('keydown', e => {
+            if ((e.key >= '0' && e.key <= '9') || ['+', '-', '*', '/', '.', '(', ')'].includes(e.key)) {
+                output.innerText += e.key;
+            } else if (e.key === '^') output.innerText += '**';
+            else if (e.key === 'Enter') { e.preventDefault(); calculateResult(); }
+            else if (e.key === 'Backspace') output.innerText = output.innerText.slice(0, -1);
+            else if (e.key === 'Escape') { output.innerText = ''; answer.innerText = ''; }
+        });
+    </script>
+</body>
+</html>
